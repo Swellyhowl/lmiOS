@@ -7,7 +7,7 @@
 //
 
 #import "ViewController.h"
-
+#define offsetX [UIScreen mainScreen].bounds.size.width
 @interface ViewController ()<UIScrollViewDelegate>
 @property(nonatomic,strong) UIScrollView *scrw;
 @property(nonatomic,strong) UIImageView *imgViewLeft;
@@ -17,6 +17,12 @@
 @property(nonatomic,strong) NSTimer *timer;
 /**需要一个数组，用来存放需要滚动的几张图片 */
 @property(nonatomic,strong) NSMutableArray *imageNamesArray;
+/** 用来记录当前显示的图片，在数组中的下标*/
+@property(nonatomic,assign) NSInteger imgindex;
+/**用来设置到leftmiddleright三个imgView中的图片名字数组*/
+@property(nonatomic,strong) NSMutableArray *imgSetNameArr;
+
+
 
 @end
 
@@ -37,6 +43,13 @@
     [self addTimer];
 
 }
+- (NSMutableArray *)imgSetNameArr{
+    if (!_imgSetNameArr) {
+        _imgSetNameArr = [NSMutableArray new];
+    }
+    return _imgSetNameArr;
+
+}
 - (NSMutableArray *)imageNamesArray{
     if (!_imageNamesArray) {
         _imageNamesArray = [NSMutableArray new];
@@ -52,6 +65,8 @@
         _scrw.bounces = NO;
         _scrw.pagingEnabled = YES;
         _scrw.contentSize = CGSizeMake([UIScreen mainScreen].bounds.size.width * 3, 0);
+        //创建出来的scrowView默认显示第二章图片，也就是中间那张）
+        [_scrw setContentOffset:CGPointMake(offsetX, 0) animated:NO];
         [self.view addSubview:_scrw];
     }
     return _scrw;
@@ -89,14 +104,24 @@
 }
 //把数组中的图片取出来设置到left，middle，right上面
 - (void) setImgs{
-    if (self.imageNamesArray.count != 0) {
-        [self.imgViewLeft setImage:[UIImage imageNamed:self.imageNamesArray[0]]];
-        [self.imgViewMiddle setImage:[UIImage imageNamed:self.imageNamesArray[1]]];
-        [self.imgViewRight setImage:[UIImage imageNamed:self.imageNamesArray[2]]];
+    [self updateImgSetArr];
+    if (self.imageNamesArray.count != 0 && self.imgSetNameArr.count != 0) {
+        [self.imgViewLeft setImage:[UIImage imageNamed:self.imgSetNameArr[0]]];
+        [self.imgViewMiddle setImage:[UIImage imageNamed:self.imgSetNameArr[1]]];
+        [self.imgViewRight setImage:[UIImage imageNamed:self.imgSetNameArr[2]]];
+        self.imgindex = 1;
     }else{
         NSLog(@"imageNamesArray数组中没有内容");
     
     }
+
+}
+//更新设置到三个imageview中图片的数组
+- (void) updateImgSetArr{
+    for (int i = 0; i < 3; i++) {
+        [self.imgSetNameArr addObject:self.imageNamesArray[i]];
+    }
+
 
 }
 - (void)addTimer{
@@ -108,7 +133,18 @@
 }
 //切换到下一张图片
 - (void)changeToNextImage{
+    //先将三张图片滚动起来
+    if (self.imgindex == 2) {
+        [self.imgSetNameArr removeObjectAtIndex:0];
+        [self.imgSetNameArr addObject:self.imageNamesArray[0]];
+        [self setImgs];
+    }else{
+        _imgindex++;
+        
+    }
+    
     NSLog(@"这里是每隔两秒就调用一次吗");
+    [self.scrw setContentOffset:CGPointMake(offsetX, 0) animated:YES];
 //    NSInteger ofset = self.scrw.contentOffset.x / self.scrw.bounds.size.width;
 //    [self.scrw setContentOffset:CGPointMake(ofset, 0) animated:YES];
 /**

@@ -204,6 +204,7 @@
 				TargetAttributes = {
 					50B6F9311F31515C00069723 = {
 						CreatedOnToolsVersion = 8.3.3;
+						DevelopmentTeam = A8FWGCQC67;
 						ProvisioningStyle = Automatic;
 					};
 					50B6F94A1F31515C00069723 = {
@@ -412,6 +413,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = A8FWGCQC67;
 				INFOPLIST_FILE = "图片轮播/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "buaa.lm.----";
@@ -423,6 +425,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = A8FWGCQC67;
 				INFOPLIST_FILE = "图片轮播/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "buaa.lm.----";

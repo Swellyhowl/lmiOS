@@ -13,14 +13,9 @@
 @property(nonatomic,strong) UIImageView *imgViewLeft;
 @property(nonatomic,strong) UIImageView *imgViewMiddle;
 @property(nonatomic,strong) UIImageView *imgViewRight;
-@property(nonatomic,strong) UIPageControl *pageChange;
 @property(nonatomic,strong) NSTimer *timer;
-/**需要一个数组，用来存放需要滚动的几张图片 */
-@property(nonatomic,strong) NSMutableArray *imageNamesArray;
-/** 用来记录当前显示的图片，在数组中的下标*/
-@property(nonatomic,assign) NSInteger imgindex;
-/**用来设置到leftmiddleright三个imgView中的图片名字数组*/
-@property(nonatomic,strong) NSMutableArray *imgSetNameArr;
+@property(nonatomic,strong) UIPageControl *pageC;
+
 
 
 
@@ -31,10 +26,12 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
-    [self addNameForImgs];
-    [self setImgs];
-    
+
     [self move];
+    [self setPageControl];
+
+    NSLog(@"子视图%@",self.view.subviews);
+
 }
 - (void)move{
     self.imgViewLeft.backgroundColor = [UIColor redColor];
@@ -43,19 +40,15 @@
     [self addTimer];
 
 }
-- (NSMutableArray *)imgSetNameArr{
-    if (!_imgSetNameArr) {
-        _imgSetNameArr = [NSMutableArray new];
-    }
-    return _imgSetNameArr;
 
-}
-- (NSMutableArray *)imageNamesArray{
-    if (!_imageNamesArray) {
-        _imageNamesArray = [NSMutableArray new];
+- (UIPageControl *)pageC{
+    if (!_pageC) {
+        _pageC = [[UIPageControl alloc] initWithFrame:CGRectMake(0, offsetX - 240, offsetX,40 )];
     }
-    return _imageNamesArray;
+    return _pageC;
 }
+
+
 - (UIScrollView *)scrw{
     if (!_scrw) {
         _scrw = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, 200)];
@@ -66,7 +59,9 @@
         _scrw.pagingEnabled = YES;
         _scrw.contentSize = CGSizeMake([UIScreen mainScreen].bounds.size.width * 3, 0);
         //创建出来的scrowView默认显示第二章图片，也就是中间那张）
-        [_scrw setContentOffset:CGPointMake(offsetX, 0) animated:NO];
+        [_scrw setContentOffset:CGPointMake(offsetX, 0) animated:YES];
+        NSLog(@"刚创建出来的contentoffset%f,%f",_scrw.contentOffset.x,_scrw.contentOffset.y);
+        _scrw.delegate = self;
         [self.view addSubview:_scrw];
     }
     return _scrw;
@@ -76,6 +71,7 @@
     if (!_imgViewLeft) {
         _imgViewLeft = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, 200)];
         //_imgViewLeft.backgroundColor = [UIColor redColor];
+        [_imgViewLeft setImage:[UIImage imageNamed:@"5"]];
         [self.scrw addSubview:_imgViewLeft];
     }
     return _imgViewLeft;
@@ -84,7 +80,8 @@
     if (!_imgViewMiddle) {
         _imgViewMiddle = [[UIImageView alloc] initWithFrame:CGRectMake([UIScreen mainScreen].bounds.size.width, 0, [UIScreen mainScreen].bounds.size.width, 200)];
       //  _imgViewMiddle.backgroundColor = [UIColor grayColor];
-    
+        [_imgViewMiddle setImage:[UIImage imageNamed:@"0"]];
+
         [self.scrw addSubview:_imgViewMiddle];
     }
     return _imgViewMiddle;
@@ -94,66 +91,96 @@
         _imgViewRight = [[UIImageView alloc] initWithFrame:CGRectMake([UIScreen mainScreen].bounds.size.width * 2, 0, [UIScreen mainScreen].bounds.size.width, 200)];
         //_imgViewRight.backgroundColor = [UIColor greenColor];
         [self.scrw addSubview:_imgViewRight];
+        [_imgViewRight setImage:[UIImage imageNamed:@"1"]];
+
     }
     return _imgViewRight;
 }
-//往数组中添加图片的名字,这个地方采用的本地图片
-- (void)addNameForImgs{
-    [self.imageNamesArray addObjectsFromArray:@[@"1",@"2",@"3",@"4",@"5"]];
+//- (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView{
+//    [self.scrw setContentOffset:CGPointMake(0, 0) animated:NO];
+//
+//
+//}
+- (void) setPageControl{
+    NSLog(@"self.pageC%@",self.pageC);
+    self.pageC.numberOfPages = 5;
+    self.pageC.currentPage = 0;
+    self.pageC.userInteractionEnabled = NO;
+    self.pageC.pageIndicatorTintColor = [UIColor redColor];
+    
+    //self.pageC.center = self.scrw.center;
+    [self.view addSubview:_pageC];
+//    [self.view insertSubview:_pageC atIndex:1];
 
 }
-//把数组中的图片取出来设置到left，middle，right上面
-- (void) setImgs{
-    [self updateImgSetArr];
-    if (self.imageNamesArray.count != 0 && self.imgSetNameArr.count != 0) {
-        [self.imgViewLeft setImage:[UIImage imageNamed:self.imgSetNameArr[0]]];
-        [self.imgViewMiddle setImage:[UIImage imageNamed:self.imgSetNameArr[1]]];
-        [self.imgViewRight setImage:[UIImage imageNamed:self.imgSetNameArr[2]]];
-        self.imgindex = 1;
+
+//上一张图片
+- (void)preImg{
+    if (self.pageC.currentPage == 0) {
+        self.pageC.currentPage = 4;
     }else{
-        NSLog(@"imageNamesArray数组中没有内容");
+        self.pageC.currentPage -= 1;
+    }
+    [self.scrw setContentOffset:CGPointMake(0, 0) animated:YES];
+
+}
+//下一张图片
+- (void)nextImg{
+    if (self.pageC.currentPage == 4) {
+        self.pageC.currentPage = 0;
+    }else{
+        self.pageC.currentPage += 1;
+    }
+    //[self.scrw setBackgroundColor:[UIColor whiteColor]];
+    [self.scrw setContentOffset:CGPointMake(offsetX * 2, 0) animated:YES];
+    NSLog(@"第一次移动后的contentoffset%f,%f",_scrw.contentOffset.x,_scrw.contentOffset.y);
+
+    NSLog(@"nextImg");
+
+    
+}
+//重新加载图片，重新设置三个imgView
+- (void) reloadImgs{
+    int currentIndex = (int)self.pageC.currentPage;
+    NSLog(@"currentIndex%d",currentIndex);
+    int preIndex = (currentIndex + 4) % 5;
+    int nextIndex = (currentIndex + 1) % 5;
+    [self.imgViewLeft setImage:[UIImage imageNamed:[NSString stringWithFormat:@"%d",preIndex]]];
+    [self.imgViewMiddle setImage:[UIImage imageNamed:[NSString stringWithFormat:@"%d",currentIndex]]];
+    [self.imgViewRight setImage:[UIImage imageNamed:[NSString stringWithFormat:@"%d",nextIndex]]];
+
+}
+//开始滑动的时候要终止timer
+- (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView{
+    NSLog(@"willbeginDragging");
+    [self removeTimer];
+    
+}
+- (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate{
+    NSLog(@"DidEndDragging");
+    [self addTimer];
+    if (self.scrw.contentOffset.x < offsetX) {
+        [self preImg];
+    }else{
+        [self nextImg];
     
     }
-
+    
 }
-//更新设置到三个imageview中图片的数组
-- (void) updateImgSetArr{
-    for (int i = 0; i < 3; i++) {
-        [self.imgSetNameArr addObject:self.imageNamesArray[i]];
-    }
-
-
+- (void)scrollViewDidEndScrollingAnimation:(UIScrollView *)scrollView{
+    NSLog(@"DidEndScrollingAnimation");
+    [self reloadImgs];
+    [self.scrw setContentOffset:CGPointMake(offsetX, 0) animated:NO];
+    
 }
+
 - (void)addTimer{
-    self.timer = [NSTimer scheduledTimerWithTimeInterval:2.0 target:self selector:@selector(changeToNextImage) userInfo:nil repeats:YES];
+    self.timer = [NSTimer scheduledTimerWithTimeInterval:3 target:self selector:@selector(nextImg) userInfo:nil repeats:YES];
     [[NSRunLoop currentRunLoop] addTimer:self.timer forMode:NSRunLoopCommonModes];
 }
 - (void)removeTimer{
     [self.timer invalidate];
 }
-//切换到下一张图片
-- (void)changeToNextImage{
-    //先将三张图片滚动起来
-    if (self.imgindex == 2) {
-        [self.imgSetNameArr removeObjectAtIndex:0];
-        [self.imgSetNameArr addObject:self.imageNamesArray[0]];
-        [self setImgs];
-    }else{
-        _imgindex++;
-        
-    }
-    
-    NSLog(@"这里是每隔两秒就调用一次吗");
-    [self.scrw setContentOffset:CGPointMake(offsetX, 0) animated:YES];
-//    NSInteger ofset = self.scrw.contentOffset.x / self.scrw.bounds.size.width;
-//    [self.scrw setContentOffset:CGPointMake(ofset, 0) animated:YES];
-/**
- *如何实现只需要3个imageView就可以实现大于3张图片的无限轮播
- *这里三个imageView分别为left。middle。right三个imageView
-    *假设这里有5张图片，放在一个数组中，那么【0】-->left，【1】-->middle，【2】-->right;
-    *显示的时候只显示middle这个imageView，将imageView放入重用池，向右滑一次，此时移动到right这个imageView上，
-    *middle变为left，left可以进行重用变为right，此时【1】-->left,【2】-->middle,【3】-->right
-    *知道right变成数组下标的最后一个，在向右移动的时候，left重新设置为数组【0】
- */
-}
+
+
 @end
